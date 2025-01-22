@@ -62,6 +62,41 @@
         button:hover {
             background-color: #45a049;
         }
+
+        #logContainer {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+
+        #logContainer ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #logContainer li {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .deleteBtn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .deleteBtn:hover {
+            background-color: #d43f3a;
+        }
+
     </style>
 </head>
 <body>
@@ -99,15 +134,22 @@
             <option value="income">Extra Income</option>
             <option value="expense">Extra Expense</option>
         </select>
+        <label for="reason">Reason:</label>
+        <input type="text" id="reason" placeholder="e.g., Salary, Bonus, Medical, etc." required>
         <button type="button" onclick="addTransaction()">Add Transaction</button>
     </form>
 
-    <script>
-        const dbName = "FinancialDataDB"; // IndexedDB Database Name
-        const storeName = "financialData"; // Object Store Name
-        let db;
+    <!-- Log Section -->
+    <div id="logContainer">
+        <h3>Transaction Log</h3>
+        <ul id="logList">
+            <!-- Transaction logs will be added here -->
+        </ul>
+    </div>
 
-        const defaultData = [
+    <script>
+        // Default Data (for initial load)
+        const initialData = [
             { month: "Jan 2025", incomeType: "Savings", income: 700, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 700, housePayment: 300, remainingAfterPayment: 400, extra: 0, finalRemaining: 400 },
             { month: "Feb 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 1700, housePayment: 300, remainingAfterPayment: 1100, extra: 0, finalRemaining: 1100 },
             { month: "Mar 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 2700, housePayment: 300, remainingAfterPayment: 1800, extra: 0, finalRemaining: 1800 },
@@ -128,92 +170,29 @@
             { month: "Jun 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 8108, housePayment: 300, remainingAfterPayment: 2708, extra: 0, finalRemaining: 2708 }
         ];
 
-        // Open IndexedDB Database
-        function openDB() {
-            const request = indexedDB.open(dbName, 1);
-
-            request.onupgradeneeded = function(event) {
-                db = event.target.result;
-                if (!db.objectStoreNames.contains(storeName)) {
-                    db.createObjectStore(storeName, { keyPath: "month" });
-                }
-            };
-
-            request.onsuccess = function(event) {
-                db = event.target.result;
-                renderTable(); // Render table once the DB is opened successfully
-            };
-
-            request.onerror = function(event) {
-                console.error("Database error:", event.target.error);
-            };
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('financialData');
+            const savedLogs = localStorage.getItem('transactionLogs');
+            if (savedData && savedLogs) {
+                return {
+                    data: JSON.parse(savedData),
+                    logs: JSON.parse(savedLogs)
+                };
+            }
+            return { data: initialData, logs: [] };
         }
 
-        // Save data to IndexedDB
-        function saveData(data) {
-            const transaction = db.transaction([storeName], "readwrite");
-            const store = transaction.objectStore(storeName);
-
-            data.forEach(item => {
-                store.put(item); // 'put' will add or update the item
-            });
-
-            transaction.oncomplete = function() {
-                console.log("Data saved to IndexedDB");
-            };
-
-            transaction.onerror = function(event) {
-                console.error("Error saving data:", event.target.error);
-            };
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('financialData', JSON.stringify(data));
+            localStorage.setItem('transactionLogs', JSON.stringify(logs));
         }
 
-        // Retrieve data from IndexedDB
-        function getData(callback) {
-            const transaction = db.transaction([storeName], "readonly");
-            const store = transaction.objectStore(storeName);
-            const request = store.getAll();
-
-            request.onsuccess = function(event) {
-                callback(event.target.result);
-            };
-
-            request.onerror = function(event) {
-                console.error("Error retrieving data:", event.target.error);
-            };
-        }
-
-        // Render the Table
-        function renderTable() {
-            getData(function(data) {
-                if (data.length === 0) {
-                    // Use default data if no data found in DB
-                    data = defaultData;
-                }
-                recalculateFinalSavings(data);
-                const tbody = document.querySelector("#financialTable tbody");
-                tbody.innerHTML = ""; // Clear current table rows
-
-                data.forEach(row => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${row.month}</td>
-                        <td>${row.incomeType}</td>
-                        <td>${row.income}</td>
-                        <td>${row.shortfallSurplus}</td>
-                        <td>${row.savingsChange}</td>
-                        <td>${row.remainingSavings}</td>
-                        <td>${row.housePayment}</td>
-                        <td>${row.remainingAfterPayment}</td>
-                        <td>${row.extra}</td>
-                        <td>${row.finalRemaining}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            });
-        }
+        let { data, logs } = loadData();
 
         // Recalculate Final Remaining Savings
-        function recalculateFinalSavings(data) {
+        function recalculateFinalSavings() {
             for (let i = 0; i < data.length; i++) {
                 if (i === 0) {
                     data[i].finalRemaining = data[i].remainingAfterPayment + data[i].extra;
@@ -221,7 +200,58 @@
                     data[i].finalRemaining = data[i - 1].finalRemaining + data[i].remainingAfterPayment + data[i].extra - data[i - 1].remainingAfterPayment;
                 }
             }
-            saveData(data); // Save updated data to IndexedDB
+        }
+
+        // Render the Table
+        function renderTable() {
+            const tbody = document.querySelector("#financialTable tbody");
+            tbody.innerHTML = "";
+            data.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.month}</td>
+                    <td>${row.incomeType}</td>
+                    <td>£${row.income}</td>
+                    <td>£${row.shortfallSurplus}</td>
+                    <td>£${row.savingsChange}</td>
+                    <td>£${row.remainingSavings}</td>
+                    <td>£${row.housePayment}</td>
+                    <td>£${row.remainingAfterPayment}</td>
+                    <td>£${row.extra}</td>
+                    <td>£${row.finalRemaining}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render the Logs
+        function renderLogs() {
+            const logList = document.getElementById("logList");
+            logList.innerHTML = ""; // Clear the log list
+            logs.forEach(log => {
+                const logEntry = document.createElement("li");
+                logEntry.innerHTML = `
+                    ${log.type === 'income' ? 'Added' : 'Removed'} £${log.amount} for ${log.month} (Reason: ${log.reason})
+                    <button class="deleteBtn" onclick="deleteLog(this)">Delete</button>
+                `;
+                logList.appendChild(logEntry);
+            });
+        }
+
+        // Update the Log
+        function updateLog(month, type, amount, reason) {
+            logs.push({ month, type, amount, reason });
+            saveData();
+            renderLogs();
+        }
+
+        // Delete Log Entry
+        function deleteLog(button) {
+            const logEntry = button.parentElement;
+            const index = Array.from(logEntry.parentNode.children).indexOf(logEntry);
+            logs.splice(index, 1);
+            logEntry.remove();
+            saveData();
         }
 
         // Add Extra Income or Expense
@@ -229,25 +259,23 @@
             const month = document.getElementById("month").value;
             const amount = parseFloat(document.getElementById("amount").value);
             const type = document.getElementById("type").value;
+            const reason = document.getElementById("reason").value;
 
-            if (!month || isNaN(amount)) {
-                alert("Please fill in both month and amount.");
-                return;
+            const row = data.find(r => r.month === month);
+            if (row) {
+                row.extra += (type === "income" ? amount : -amount);
+                recalculateFinalSavings();
+                renderTable();
+                updateLog(month, type, amount, reason);
+            } else {
+                alert("Month not found in the table!");
             }
-
-            getData(function(data) {
-                const index = data.findIndex(item => item.month === month);
-                if (index !== -1) {
-                    data[index].extra = type === 'income' ? amount : -amount;
-                    recalculateFinalSavings(data); // Recalculate and update the table
-                } else {
-                    alert("Month not found!");
-                }
-            });
         }
 
-        // Initialize Database and Render Table
-        openDB();
+        // Initial Calculation and Render
+        recalculateFinalSavings();
+        renderTable();
+        renderLogs();
     </script>
 </body>
 </html>
