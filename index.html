@@ -62,12 +62,33 @@
         button:hover {
             background-color: #45a049;
         }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-entry button {
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .log-entry button:hover {
+            background-color: darkred;
+        }
     </style>
 </head>
 <body>
     <script>
     // Password protection logic
-    const password = "yourpassword"; // Set your desired password here
+    const password = "lillybella"; // Set your desired password here
     let enteredPassword = prompt("Please enter the password to access this page:");
 
     if (enteredPassword !== password) {
@@ -113,6 +134,11 @@
         <button type="button" onclick="addTransaction()">Add Transaction</button>
     </form>
 
+    <h2>Transaction Log</h2>
+    <div id="transactionLog">
+        <!-- Transaction log will be appended here -->
+    </div>
+
     <script>
         // Complete Data for All Months
         const data = [
@@ -135,6 +161,8 @@
             { month: "May 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 9164, housePayment: 300, remainingAfterPayment: 4064, extra: 0, finalRemaining: 4064 },
             { month: "Jun 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 8108, housePayment: 300, remainingAfterPayment: 2708, extra: 0, finalRemaining: 2708 }
         ];
+
+        let transactionLog = [];
 
         // Recalculate Final Remaining Savings
         function recalculateFinalSavings() {
@@ -169,25 +197,64 @@
             });
         }
 
+        // Render the Transaction Log
+        function renderTransactionLog() {
+            const logContainer = document.getElementById("transactionLog");
+            logContainer.innerHTML = "";
+            transactionLog.forEach((entry, index) => {
+                const logEntry = document.createElement("div");
+                logEntry.classList.add("log-entry");
+                logEntry.innerHTML = `
+                    <span>${entry.date} | £${entry.amount} ${entry.type === 'income' ? 'Extra Income' : 'Extra Expense'}</span>
+                    <button onclick="removeTransaction(${index})">Remove</button>
+                `;
+                logContainer.appendChild(logEntry);
+            });
+        }
+
         // Add Extra Income or Expense
         function addTransaction() {
             const month = document.getElementById("month").value;
             const amount = parseFloat(document.getElementById("amount").value);
             const type = document.getElementById("type").value;
+            const date = new Date().toLocaleDateString();
 
             const row = data.find(r => r.month === month);
             if (row) {
                 row.extra += (type === "income" ? amount : -amount);
                 recalculateFinalSavings();
                 renderTable();
+
+                // Add the entry to the transaction log
+                transactionLog.push({ date, amount, type });
+                renderTransactionLog();
             } else {
                 alert("Month not found in the table!");
             }
         }
 
+        // Remove Transaction from Log
+        function removeTransaction(index) {
+            // Remove from the transaction log
+            const entry = transactionLog[index];
+            transactionLog.splice(index, 1);
+
+            // Update the data to remove the impact of the removed transaction
+            const row = data.find(r => r.month === entry.date.split(" ")[0]); // Match the month to the row
+            if (row) {
+                row.extra -= (entry.type === "income" ? entry.amount : -entry.amount);
+                recalculateFinalSavings();
+                renderTable();
+            }
+
+            // Re-render the transaction log
+            renderTransactionLog();
+        }
+
         // Initial Calculation and Render
         recalculateFinalSavings();
         renderTable();
+        renderTransactionLog();
     </script>
 </body>
 </html>
