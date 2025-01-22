@@ -64,37 +64,32 @@
         }
 
         .log-entry {
-            margin: 5px 0;
-            padding: 10px;
-            border: 1px solid #ddd;
             background-color: #f9f9f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            padding: 10px;
         }
 
         .log-entry button {
-            background-color: red;
-            color: white;
-            border: none;
-            cursor: pointer;
+            background-color: #ff4d4d;
         }
 
         .log-entry button:hover {
-            background-color: darkred;
+            background-color: #ff1a1a;
         }
     </style>
 </head>
 <body>
     <script>
-    // Password protection logic
-    const password = "lillybella"; // Set your desired password here
-    let enteredPassword = prompt("Please enter the password to access this page:");
+        // Password protection logic
+        const password = "lillybella"; // Set your desired password here
+        let enteredPassword = prompt("Please enter the password to access this page:");
 
-    if (enteredPassword !== password) {
-        alert("Incorrect password! Redirecting to Google.");
-        window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
-    }
+        // Trim any extra spaces from the entered password before comparison
+        if (enteredPassword.trim() !== password) {
+            alert("Incorrect password! Redirecting to Google.");
+            window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
+        }
     </script>
 
     <h1>Dynamic Financial Tracker</h1>
@@ -134,10 +129,7 @@
         <button type="button" onclick="addTransaction()">Add Transaction</button>
     </form>
 
-    <h2>Transaction Log</h2>
-    <div id="transactionLog">
-        <!-- Transaction log will be appended here -->
-    </div>
+    <div id="logEntries"></div>
 
     <script>
         // Complete Data for All Months
@@ -197,27 +189,11 @@
             });
         }
 
-        // Render the Transaction Log
-        function renderTransactionLog() {
-            const logContainer = document.getElementById("transactionLog");
-            logContainer.innerHTML = "";
-            transactionLog.forEach((entry, index) => {
-                const logEntry = document.createElement("div");
-                logEntry.classList.add("log-entry");
-                logEntry.innerHTML = `
-                    <span>${entry.date} | £${entry.amount} ${entry.type === 'income' ? 'Extra Income' : 'Extra Expense'}</span>
-                    <button onclick="removeTransaction(${index})">Remove</button>
-                `;
-                logContainer.appendChild(logEntry);
-            });
-        }
-
         // Add Extra Income or Expense
         function addTransaction() {
             const month = document.getElementById("month").value;
             const amount = parseFloat(document.getElementById("amount").value);
             const type = document.getElementById("type").value;
-            const date = new Date().toLocaleDateString();
 
             const row = data.find(r => r.month === month);
             if (row) {
@@ -225,36 +201,46 @@
                 recalculateFinalSavings();
                 renderTable();
 
-                // Add the entry to the transaction log
-                transactionLog.push({ date, amount, type });
-                renderTransactionLog();
+                // Log the transaction
+                const logEntry = {
+                    date: new Date().toLocaleDateString(),
+                    month: month,
+                    amount: amount,
+                    type: type
+                };
+                transactionLog.push(logEntry);
+                renderLog();
             } else {
                 alert("Month not found in the table!");
             }
         }
 
-        // Remove Transaction from Log
-        function removeTransaction(index) {
-            // Remove from the transaction log
-            const entry = transactionLog[index];
+        // Render the Transaction Log
+        function renderLog() {
+            const logContainer = document.getElementById("logEntries");
+            logContainer.innerHTML = "";
+            transactionLog.forEach((entry, index) => {
+                const logEntryDiv = document.createElement("div");
+                logEntryDiv.className = "log-entry";
+                logEntryDiv.innerHTML = `
+                    <strong>${entry.date}:</strong> ${entry.amount} - ${entry.type === "income" ? "Extra Income" : "Extra Expense"} for ${entry.month}
+                    <button onclick="removeLogEntry(${index})">Remove</button>
+                `;
+                logContainer.appendChild(logEntryDiv);
+            });
+        }
+
+        // Remove Log Entry
+        function removeLogEntry(index) {
             transactionLog.splice(index, 1);
-
-            // Update the data to remove the impact of the removed transaction
-            const row = data.find(r => r.month === entry.date.split(" ")[0]); // Match the month to the row
-            if (row) {
-                row.extra -= (entry.type === "income" ? entry.amount : -entry.amount);
-                recalculateFinalSavings();
-                renderTable();
-            }
-
-            // Re-render the transaction log
-            renderTransactionLog();
+            renderLog();
+            recalculateFinalSavings();
+            renderTable();
         }
 
         // Initial Calculation and Render
         recalculateFinalSavings();
         renderTable();
-        renderTransactionLog();
     </script>
 </body>
 </html>
