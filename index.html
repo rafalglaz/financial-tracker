@@ -66,14 +66,14 @@
 </head>
 <body>
     <script>
-        // Ask for password on page load
-        const correctPassword = "lillybella"; // Replace with your desired password
-        const userPassword = prompt("Enter the password to access the Financial Tracker:");
+    // Password protection logic
+    const password = "yourpassword"; // Set your desired password here
+    let enteredPassword = prompt("Please enter the password to access this page:");
 
-        // If password is incorrect, redirect to Google
-        if (userPassword !== correctPassword) {
-            window.location.href = "https://www.google.com";
-        }
+    if (enteredPassword !== password) {
+        alert("Incorrect password! Redirecting to Google.");
+        window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
+    }
     </script>
 
     <h1>Dynamic Financial Tracker</h1>
