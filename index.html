@@ -80,45 +80,74 @@
     </style>
 </head>
 <body>
-    <script>
-        // Password protection logic: Prompt for password every time
-        const password = "lillybella"; // Set your desired password here
+    <div id="content" style="display: none;">
+        <h1>Financial Tracker</h1>
+        <div id="transactionForm">
+            <h2>Add Extra Income or Expense</h2>
+            <label for="month">Month:</label>
+            <select id="month">
+                <!-- Dynamic months will go here -->
+            </select>
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" required />
+            <label for="type">Type:</label>
+            <select id="type">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+            <button onclick="addTransaction()">Add Transaction</button>
+        </div>
 
-        // Check if the password has already been validated
+        <h2>Financial Overview</h2>
+        <div id="tableContainer">
+            <table id="financialTable">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Income Type</th>
+                        <th>Income</th>
+                        <th>Shortfall/Surplus</th>
+                        <th>Savings Change</th>
+                        <th>Remaining Savings</th>
+                        <th>House Payment</th>
+                        <th>Remaining After Payment</th>
+                        <th>Extra Income/Expense</th>
+                        <th>Final Remaining Savings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will go here -->
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Transaction Log</h2>
+        <div id="logEntries">
+            <!-- Log entries will go here -->
+        </div>
+    </div>
+
+    <script>
+        // Password protection logic
+        const password = "lillybella"; // Set your desired password here
         if (!localStorage.getItem("passwordValidated")) {
             const enteredPassword = prompt("Please enter the password to access this page:");
-
             if (enteredPassword.trim() !== password) {
                 alert("Incorrect password! Redirecting to Google.");
                 window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
             } else {
-                // Set passwordValidated to true in localStorage
+                // Store in localStorage so that user doesn't have to enter password again
                 localStorage.setItem("passwordValidated", "true");
+                window.location.reload(); // Reload the page to proceed after password validation
             }
         }
 
-        // Once password is validated, continue loading the page content
-        window.onload = function() {
-            // Complete Data for All Months
+        window.onload = function () {
+            // Display content after password validation
+            document.getElementById("content").style.display = "block";
+
             const data = [
-                { month: "Jan 2025", incomeType: "Savings", income: 700, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 700, housePayment: 300, remainingAfterPayment: 400, extra: 0, finalRemaining: 400 },
-                { month: "Feb 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 1700, housePayment: 300, remainingAfterPayment: 1100, extra: 0, finalRemaining: 1100 },
-                { month: "Mar 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 2700, housePayment: 300, remainingAfterPayment: 1800, extra: 0, finalRemaining: 1800 },
-                { month: "Apr 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 3700, housePayment: 300, remainingAfterPayment: 2500, extra: 0, finalRemaining: 2500 },
-                { month: "May 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 4700, housePayment: 300, remainingAfterPayment: 3200, extra: 0, finalRemaining: 3200 },
-                { month: "Jun 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 5700, housePayment: 300, remainingAfterPayment: 3900, extra: 0, finalRemaining: 3900 },
-                { month: "Jul 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 6700, housePayment: 300, remainingAfterPayment: 4600, extra: 0, finalRemaining: 4600 },
-                { month: "Aug 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 7700, housePayment: 300, remainingAfterPayment: 5300, extra: 0, finalRemaining: 5300 },
-                { month: "Sep 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 8700, housePayment: 300, remainingAfterPayment: 6000, extra: 0, finalRemaining: 6000 },
-                { month: "Oct 2025", incomeType: "Normal Pay (2 months)", income: 2750, shortfallSurplus: 1000, savingsChange: 1000, remainingSavings: 9700, housePayment: 300, remainingAfterPayment: 6700, extra: 0, finalRemaining: 6700 },
-                { month: "Nov 2025", incomeType: "Normal Pay (2 months)", income: 2750, shortfallSurplus: 1000, savingsChange: 1000, remainingSavings: 10700, housePayment: 300, remainingAfterPayment: 7400, extra: 0, finalRemaining: 7400 },
-                { month: "Dec 2025", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 11244, housePayment: 300, remainingAfterPayment: 7644, extra: 0, finalRemaining: 7644 },
-                { month: "Jan 2026", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 11788, housePayment: 300, remainingAfterPayment: 7888, extra: 0, finalRemaining: 7888 },
-                { month: "Feb 2026", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 12332, housePayment: 300, remainingAfterPayment: 8132, extra: 0, finalRemaining: 8132 },
-                { month: "Mar 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 11276, housePayment: 300, remainingAfterPayment: 6776, extra: 0, finalRemaining: 6776 },
-                { month: "Apr 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 10220, housePayment: 300, remainingAfterPayment: 5420, extra: 0, finalRemaining: 5420 },
-                { month: "May 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 9164, housePayment: 300, remainingAfterPayment: 4064, extra: 0, finalRemaining: 4064 },
-                { month: "Jun 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 8108, housePayment: 300, remainingAfterPayment: 2708, extra: 0, finalRemaining: 2708 }
+                // Your initial financial data here...
             ];
 
             let transactionLog = JSON.parse(localStorage.getItem("transactionLog")) || [];
@@ -134,7 +163,7 @@
                 }
             }
 
-            // Render the Table
+            // Render Table
             function renderTable() {
                 const tbody = document.querySelector("#financialTable tbody");
                 tbody.innerHTML = "";
@@ -218,6 +247,15 @@
             recalculateFinalSavings();
             renderTable();
             renderLog();
+
+            // Dynamically populate the month dropdown
+            const monthSelect = document.getElementById("month");
+            data.forEach(row => {
+                const option = document.createElement("option");
+                option.value = row.month;
+                option.textContent = row.month;
+                monthSelect.appendChild(option);
+            });
         };
     </script>
 </body>
