@@ -81,57 +81,21 @@
 </head>
 <body>
     <script>
-        // Password protection logic
+        // Password protection logic with localStorage persistence
         const password = "lillybella"; // Set your desired password here
-        let enteredPassword = prompt("Please enter the password to access this page:");
+        let enteredPassword = localStorage.getItem("enteredPassword");
 
-        // Trim any extra spaces from the entered password before comparison
-        if (enteredPassword.trim() !== password) {
-            alert("Incorrect password! Redirecting to Google.");
-            window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
+        // If the password hasn't been entered yet or it doesn't match, ask for it
+        if (!enteredPassword) {
+            enteredPassword = prompt("Please enter the password to access this page:");
+            if (enteredPassword.trim() !== password) {
+                alert("Incorrect password! Redirecting to Google.");
+                window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
+            } else {
+                localStorage.setItem("enteredPassword", enteredPassword); // Save password state
+            }
         }
-    </script>
 
-    <h1>Dynamic Financial Tracker</h1>
-    <div id="tableContainer">
-        <table id="financialTable">
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Income Type</th>
-                    <th>Monthly Income</th>
-                    <th>Shortfall/Surplus</th>
-                    <th>Savings Withdrawal / Addition</th>
-                    <th>Remaining Savings</th>
-                    <th>House Payment</th>
-                    <th>Remaining Savings (after House Payment)</th>
-                    <th>Extra Income/Expenses</th>
-                    <th>Final Remaining Savings</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Rows will be dynamically generated -->
-            </tbody>
-        </table>
-    </div>
-
-    <h2>Add Extra Income or Expense</h2>
-    <form id="updateForm">
-        <label for="month">Month:</label>
-        <input type="text" id="month" placeholder="e.g., Jan 2025" required>
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" placeholder="e.g., 500" required>
-        <label for="type">Type:</label>
-        <select id="type">
-            <option value="income">Extra Income</option>
-            <option value="expense">Extra Expense</option>
-        </select>
-        <button type="button" onclick="addTransaction()">Add Transaction</button>
-    </form>
-
-    <div id="logEntries"></div>
-
-    <script>
         // Complete Data for All Months
         const data = [
             { month: "Jan 2025", incomeType: "Savings", income: 700, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 700, housePayment: 300, remainingAfterPayment: 400, extra: 0, finalRemaining: 400 },
@@ -154,7 +118,7 @@
             { month: "Jun 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 8108, housePayment: 300, remainingAfterPayment: 2708, extra: 0, finalRemaining: 2708 }
         ];
 
-        let transactionLog = [];
+        let transactionLog = JSON.parse(localStorage.getItem("transactionLog")) || [];
 
         // Recalculate Final Remaining Savings
         function recalculateFinalSavings() {
@@ -209,6 +173,7 @@
                     type: type
                 };
                 transactionLog.push(logEntry);
+                localStorage.setItem("transactionLog", JSON.stringify(transactionLog)); // Store in localStorage
                 renderLog();
             } else {
                 alert("Month not found in the table!");
@@ -232,15 +197,24 @@
 
         // Remove Log Entry
         function removeLogEntry(index) {
-            transactionLog.splice(index, 1);
+            const removedLog = transactionLog.splice(index, 1);
+            localStorage.setItem("transactionLog", JSON.stringify(transactionLog)); // Update in localStorage
             renderLog();
-            recalculateFinalSavings();
-            renderTable();
+
+            // Undo last transaction for calculations only (do not refresh table data completely)
+            const entry = removedLog[0];
+            const row = data.find(r => r.month === entry.month);
+            if (row) {
+                row.extra -= (entry.type === "income" ? entry.amount : -entry.amount);
+                recalculateFinalSavings();
+                renderTable();
+            }
         }
 
         // Initial Calculation and Render
         recalculateFinalSavings();
         renderTable();
+        renderLog();
     </script>
 </body>
 </html>
