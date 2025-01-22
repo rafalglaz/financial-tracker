@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Tracker</title>
+    <title>Dynamic Financial Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,202 +62,121 @@
         button:hover {
             background-color: #45a049;
         }
-
-        .log-entry {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            margin-top: 10px;
-            padding: 10px;
-        }
-
-        .log-entry button {
-            background-color: #ff4d4d;
-        }
-
-        .log-entry button:hover {
-            background-color: #ff1a1a;
-        }
     </style>
 </head>
 <body>
-    <div id="content" style="display: none;">
-        <h1>Financial Tracker</h1>
-        <div id="transactionForm">
-            <h2>Add Extra Income or Expense</h2>
-            <label for="month">Month:</label>
-            <select id="month"></select>
-            <label for="amount">Amount:</label>
-            <input type="number" id="amount" required />
-            <label for="type">Type:</label>
-            <select id="type">
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-            </select>
-            <button onclick="addTransaction()">Add Transaction</button>
-        </div>
-
-        <h2>Financial Overview</h2>
-        <div id="tableContainer">
-            <table id="financialTable">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Income Type</th>
-                        <th>Income</th>
-                        <th>Shortfall/Surplus</th>
-                        <th>Savings Change</th>
-                        <th>Remaining Savings</th>
-                        <th>House Payment</th>
-                        <th>Remaining After Payment</th>
-                        <th>Extra Income/Expense</th>
-                        <th>Final Remaining Savings</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <h2>Transaction Log</h2>
-        <div id="logEntries"></div>
+    <h1>Dynamic Financial Tracker</h1>
+    <div id="tableContainer">
+        <table id="financialTable">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Income Type</th>
+                    <th>Monthly Income</th>
+                    <th>Shortfall/Surplus</th>
+                    <th>Savings Withdrawal / Addition</th>
+                    <th>Remaining Savings</th>
+                    <th>House Payment</th>
+                    <th>Remaining Savings (after House Payment)</th>
+                    <th>Extra Income/Expenses</th>
+                    <th>Final Remaining Savings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be dynamically generated -->
+            </tbody>
+        </table>
     </div>
 
+    <h2>Add Extra Income or Expense</h2>
+    <form id="updateForm">
+        <label for="month">Month:</label>
+        <input type="text" id="month" placeholder="e.g., Jan 2025" required>
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" placeholder="e.g., 500" required>
+        <label for="type">Type:</label>
+        <select id="type">
+            <option value="income">Extra Income</option>
+            <option value="expense">Extra Expense</option>
+        </select>
+        <button type="button" onclick="addTransaction()">Add Transaction</button>
+    </form>
+
     <script>
-        // Password protection logic
-        const password = "lillybella"; 
-        if (!localStorage.getItem("passwordValidated")) {
-            const enteredPassword = prompt("Please enter the password to access this page:");
-            if (enteredPassword.trim() !== password) {
-                alert("Incorrect password! Redirecting to Google.");
-                window.location.href = "https://www.google.com"; 
-            } else {
-                localStorage.setItem("passwordValidated", "true");
-                window.location.reload(); 
+        // Complete Data for All Months
+        const data = [
+            { month: "Jan 2025", incomeType: "Savings", income: 700, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 700, housePayment: 300, remainingAfterPayment: 400, extra: 0, finalRemaining: 400 },
+            { month: "Feb 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 1700, housePayment: 300, remainingAfterPayment: 1100, extra: 0, finalRemaining: 1100 },
+            { month: "Mar 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 2700, housePayment: 300, remainingAfterPayment: 1800, extra: 0, finalRemaining: 1800 },
+            { month: "Apr 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 3700, housePayment: 300, remainingAfterPayment: 2500, extra: 0, finalRemaining: 2500 },
+            { month: "May 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 4700, housePayment: 300, remainingAfterPayment: 3200, extra: 0, finalRemaining: 3200 },
+            { month: "Jun 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 5700, housePayment: 300, remainingAfterPayment: 3900, extra: 0, finalRemaining: 3900 },
+            { month: "Jul 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 6700, housePayment: 300, remainingAfterPayment: 4600, extra: 0, finalRemaining: 4600 },
+            { month: "Aug 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 7700, housePayment: 300, remainingAfterPayment: 5300, extra: 0, finalRemaining: 5300 },
+            { month: "Sep 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 8700, housePayment: 300, remainingAfterPayment: 6000, extra: 0, finalRemaining: 6000 },
+            { month: "Oct 2025", incomeType: "Normal Pay (2 months)", income: 2750, shortfallSurplus: 1000, savingsChange: 1000, remainingSavings: 9700, housePayment: 300, remainingAfterPayment: 6700, extra: 0, finalRemaining: 6700 },
+            { month: "Nov 2025", incomeType: "Normal Pay (2 months)", income: 2750, shortfallSurplus: 1000, savingsChange: 1000, remainingSavings: 10700, housePayment: 300, remainingAfterPayment: 7400, extra: 0, finalRemaining: 7400 },
+            { month: "Dec 2025", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 11244, housePayment: 300, remainingAfterPayment: 7644, extra: 0, finalRemaining: 7644 },
+            { month: "Jan 2026", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 11788, housePayment: 300, remainingAfterPayment: 7888, extra: 0, finalRemaining: 7888 },
+            { month: "Feb 2026", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 12332, housePayment: 300, remainingAfterPayment: 8132, extra: 0, finalRemaining: 8132 },
+            { month: "Mar 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 11276, housePayment: 300, remainingAfterPayment: 6776, extra: 0, finalRemaining: 6776 },
+            { month: "Apr 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 10220, housePayment: 300, remainingAfterPayment: 5420, extra: 0, finalRemaining: 5420 },
+            { month: "May 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 9164, housePayment: 300, remainingAfterPayment: 4064, extra: 0, finalRemaining: 4064 },
+            { month: "Jun 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 8108, housePayment: 300, remainingAfterPayment: 2708, extra: 0, finalRemaining: 2708 }
+        ];
+
+        // Recalculate Final Remaining Savings
+        function recalculateFinalSavings() {
+            for (let i = 0; i < data.length; i++) {
+                if (i === 0) {
+                    data[i].finalRemaining = data[i].remainingAfterPayment + data[i].extra;
+                } else {
+                    data[i].finalRemaining = data[i - 1].finalRemaining + data[i].remainingAfterPayment + data[i].extra - data[i - 1].remainingAfterPayment;
+                }
             }
         }
 
-        window.onload = function () {
-            document.getElementById("content").style.display = "block";
-
-            // Initialize data with all months from January 2025 to June 2026
-            const data = [
-                { month: "Jan 2025", incomeType: "Savings", income: 700, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 700, housePayment: 300, remainingAfterPayment: 400, extra: 0, finalRemaining: 400 },
-                { month: "Feb 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 1700, housePayment: 300, remainingAfterPayment: 1100, extra: 0, finalRemaining: 1100 },
-                { month: "Mar 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 2700, housePayment: 300, remainingAfterPayment: 1800, extra: 0, finalRemaining: 1800 },
-                { month: "Apr 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 3700, housePayment: 300, remainingAfterPayment: 2500, extra: 0, finalRemaining: 2500 },
-                { month: "May 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 4700, housePayment: 300, remainingAfterPayment: 3200, extra: 0, finalRemaining: 3200 },
-                { month: "Jun 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 5700, housePayment: 300, remainingAfterPayment: 3900, extra: 0, finalRemaining: 3900 },
-                { month: "Jul 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 6700, housePayment: 300, remainingAfterPayment: 4600, extra: 0, finalRemaining: 4600 },
-                { month: "Aug 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 7700, housePayment: 300, remainingAfterPayment: 5300, extra: 0, finalRemaining: 5300 },
-                { month: "Sep 2025", incomeType: "Savings", income: 1000, shortfallSurplus: 0, savingsChange: 0, remainingSavings: 8700, housePayment: 300, remainingAfterPayment: 6000, extra: 0, finalRemaining: 6000 },
-                { month: "Oct 2025", incomeType: "Normal Pay (2 months)", income: 2750, shortfallSurplus: 1000, savingsChange: 1000, remainingSavings: 9700, housePayment: 300, remainingAfterPayment: 6700, extra: 0, finalRemaining: 6700 },
-                { month: "Nov 2025", incomeType: "Normal Pay (2 months)", income: 2750, shortfallSurplus: 1000, savingsChange: 1000, remainingSavings: 10700, housePayment: 300, remainingAfterPayment: 7400, extra: 0, finalRemaining: 7400 },
-                { month: "Dec 2025", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 11244, housePayment: 300, remainingAfterPayment: 7644, extra: 0, finalRemaining: 7644 },
-                { month: "Jan 2026", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 11788, housePayment: 300, remainingAfterPayment: 7888, extra: 0, finalRemaining: 7888 },
-                { month: "Feb 2026", incomeType: "Half Pay + SMP (3 months)", income: 2344, shortfallSurplus: 544, savingsChange: 544, remainingSavings: 12332, housePayment: 300, remainingAfterPayment: 8132, extra: 0, finalRemaining: 8132 },
-                { month: "Mar 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 11276, housePayment: 300, remainingAfterPayment: 6776, extra: 0, finalRemaining: 6776 },
-                { month: "Apr 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 10220, housePayment: 300, remainingAfterPayment: 5420, extra: 0, finalRemaining: 5420 },
-                { month: "May 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 9164, housePayment: 300, remainingAfterPayment: 4064, extra: 0, finalRemaining: 4064 },
-                { month: "Jun 2026", incomeType: "SMP only (4 months)", income: 744, shortfallSurplus: -1056, savingsChange: -1056, remainingSavings: 8108, housePayment: 300, remainingAfterPayment: 2708, extra: 0, finalRemaining: 2708 }
-            ];
-
-            let transactionLog = JSON.parse(localStorage.getItem("transactionLog")) || [];
-
-            // Recalculate Final Remaining Savings
-            function recalculateFinalSavings() {
-                for (let i = 0; i < data.length; i++) {
-                    if (i === 0) {
-                        data[i].finalRemaining = data[i].remainingAfterPayment + data[i].extra;
-                    } else {
-                        data[i].finalRemaining = data[i - 1].finalRemaining + data[i].remainingAfterPayment + data[i].extra - data[i - 1].remainingAfterPayment;
-                    }
-                }
-            }
-
-            function renderTable() {
-                const tbody = document.querySelector("#financialTable tbody");
-                tbody.innerHTML = "";
-                data.forEach(row => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${row.month}</td>
-                        <td>${row.incomeType}</td>
-                        <td>£${row.income}</td>
-                        <td>£${row.shortfallSurplus}</td>
-                        <td>£${row.savingsChange}</td>
-                        <td>£${row.remainingSavings}</td>
-                        <td>£${row.housePayment}</td>
-                        <td>£${row.remainingAfterPayment}</td>
-                        <td>£${row.extra}</td>
-                        <td>£${row.finalRemaining}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            function renderLog() {
-                const logContainer = document.getElementById("logEntries");
-                logContainer.innerHTML = "";
-                transactionLog.forEach((entry, index) => {
-                    const logEntryDiv = document.createElement("div");
-                    logEntryDiv.className = "log-entry";
-                    logEntryDiv.innerHTML = `
-                        <strong>${entry.date}:</strong> £${entry.amount} - ${entry.type === "income" ? "Extra Income" : "Extra Expense"} for ${entry.month}
-                        <button onclick="removeLogEntry(${index})">Remove</button>
-                    `;
-                    logContainer.appendChild(logEntryDiv);
-                });
-            }
-
-            function addTransaction() {
-                const month = document.getElementById("month").value;
-                const amount = parseFloat(document.getElementById("amount").value);
-                const type = document.getElementById("type").value;
-
-                const row = data.find(r => r.month === month);
-                if (row) {
-                    row.extra += (type === "income" ? amount : -amount);
-                    recalculateFinalSavings();
-                    renderTable();
-
-                    const logEntry = {
-                        date: new Date().toLocaleDateString(),
-                        month: month,
-                        amount: amount,
-                        type: type
-                    };
-                    transactionLog.push(logEntry);
-                    localStorage.setItem("transactionLog", JSON.stringify(transactionLog));
-                    renderLog();
-                } else {
-                    alert("Month not found in the table!");
-                }
-            }
-
-            function removeLogEntry(index) {
-                const removedLog = transactionLog.splice(index, 1)[0];
-                localStorage.setItem("transactionLog", JSON.stringify(transactionLog));
-                const row = data.find(r => r.month === removedLog.month);
-                if (row) {
-                    row.extra -= (removedLog.type === "income" ? removedLog.amount : -removedLog.amount);
-                    recalculateFinalSavings();
-                    renderTable();
-                }
-                renderLog();
-            }
-
-            // Initialize the months dropdown
-            const monthSelect = document.getElementById("month");
+        // Render the Table
+        function renderTable() {
+            const tbody = document.querySelector("#financialTable tbody");
+            tbody.innerHTML = "";
             data.forEach(row => {
-                const option = document.createElement("option");
-                option.value = row.month;
-                option.textContent = row.month;
-                monthSelect.appendChild(option);
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.month}</td>
+                    <td>${row.incomeType}</td>
+                    <td>£${row.income}</td>
+                    <td>£${row.shortfallSurplus}</td>
+                    <td>£${row.savingsChange}</td>
+                    <td>£${row.remainingSavings}</td>
+                    <td>£${row.housePayment}</td>
+                    <td>£${row.remainingAfterPayment}</td>
+                    <td>£${row.extra}</td>
+                    <td>£${row.finalRemaining}</td>
+                `;
+                tbody.appendChild(tr);
             });
+        }
 
-            recalculateFinalSavings();
-            renderTable();
-            renderLog();
-        };
+        // Add Extra Income or Expense
+        function addTransaction() {
+            const month = document.getElementById("month").value;
+            const amount = parseFloat(document.getElementById("amount").value);
+            const type = document.getElementById("type").value;
+
+            const row = data.find(r => r.month === month);
+            if (row) {
+                row.extra += (type === "income" ? amount : -amount);
+                recalculateFinalSavings();
+                renderTable();
+            } else {
+                alert("Month not found in the table!");
+            }
+        }
+
+        // Initial Calculation and Render
+        recalculateFinalSavings();
+        renderTable();
     </script>
 </body>
 </html>
