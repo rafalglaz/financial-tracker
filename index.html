@@ -81,19 +81,13 @@
 </head>
 <body>
     <script>
-        // Password protection logic with localStorage persistence
+        // Password protection logic: Prompt for password every time
         const password = "lillybella"; // Set your desired password here
-        let enteredPassword = localStorage.getItem("enteredPassword");
+        let enteredPassword = prompt("Please enter the password to access this page:");
 
-        // If the password hasn't been entered yet or it doesn't match, ask for it
-        if (!enteredPassword) {
-            enteredPassword = prompt("Please enter the password to access this page:");
-            if (enteredPassword.trim() !== password) {
-                alert("Incorrect password! Redirecting to Google.");
-                window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
-            } else {
-                localStorage.setItem("enteredPassword", enteredPassword); // Save password state
-            }
+        if (enteredPassword.trim() !== password) {
+            alert("Incorrect password! Redirecting to Google.");
+            window.location.href = "https://www.google.com"; // Redirect to Google if the password is incorrect
         }
 
         // Complete Data for All Months
