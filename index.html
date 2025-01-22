@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Financial Tracker</title>
+    <title>Financial Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -147,7 +147,19 @@
             document.getElementById("content").style.display = "block";
 
             const data = [
-                // Your initial financial data here...
+                {
+                    month: 'January',
+                    incomeType: 'Salary',
+                    income: 3000,
+                    shortfallSurplus: 500,
+                    savingsChange: 300,
+                    remainingSavings: 2000,
+                    housePayment: 800,
+                    remainingAfterPayment: 1200,
+                    extra: 0,
+                    finalRemaining: 1200
+                },
+                // Additional rows can be added here as per your data...
             ];
 
             let transactionLog = JSON.parse(localStorage.getItem("transactionLog")) || [];
@@ -166,7 +178,7 @@
             // Render Table
             function renderTable() {
                 const tbody = document.querySelector("#financialTable tbody");
-                tbody.innerHTML = "";
+                tbody.innerHTML = ""; // Clear existing rows
                 data.forEach(row => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
@@ -215,7 +227,7 @@
             // Render the Transaction Log
             function renderLog() {
                 const logContainer = document.getElementById("logEntries");
-                logContainer.innerHTML = "";
+                logContainer.innerHTML = ""; // Clear existing log
                 transactionLog.forEach((entry, index) => {
                     const logEntryDiv = document.createElement("div");
                     logEntryDiv.className = "log-entry";
